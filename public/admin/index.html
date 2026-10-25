@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamSex.cloud - Admin Panel</title>
+    <style>
+        body { background-color: #0b0b0f; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .card { background: #16161f; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        input, button { width: 100%; padding: 12px; margin-top: 10px; background: #22222f; border: 1px solid #33334f; color: #fff; border-radius: 8px; box-sizing: border-box; }
+        button { background: linear-gradient(135deg, #ff2a6d, #d80032); font-weight: bold; cursor: pointer; border: none; }
+        table { width: 100%; margin-top: 15px; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; font-size: 14px; }
+        th { color: #888; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>⚡ CamSex.cloud Admin Control</h2>
+        <a href="../" style="color: #00ffcc; text-decoration: none;">← View Live Site</a>
+    </div>
+    <div class="card">
+        <h3>Add New Video Metadata</h3>
+        <input type="text" id="vTitle" placeholder="Video / Stream Title">
+        <input type="text" id="vCategory" placeholder="Category (e.g., Webcams, Amateur)">
+        <input type="text" id="vThumb" placeholder="Thumbnail Image URL">
+        <button onclick="alert('Metadata handler ready for backend hook!')">Save Stream Record</button>
+    </div>
+    <div class="card">
+        <h3>Current Catalog Database</h3>
+        <table>
+            <thead><tr><th>Title</th><th>Category</th></tr></thead>
+            <tbody id="videoTable"><tr><td colspan="2" style="color:#666;">Loading...</td></tr></tbody>
+        </table>
+    </div>
+    <script>
+        async function loadAdmin() {
+            let res = await fetch('../videos.json');
+            let data = await res.json();
+            let tbody = document.getElementById('videoTable');
+            tbody.innerHTML = '';
+            data.forEach(v => {
+                tbody.innerHTML += `<tr><td>${v.title}</td><td>${v.category}</td></tr>`;
+            });
+        }
+        loadAdmin();
+    </script>
+</body>
+</html>
