@@ -1,7 +1,16 @@
 from datetime import datetime
+import random
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
+
+# Your 4 target sites for traffic distribution
+TARGET_DESTINATIONS = [
+    "https://camsex.cloud/",
+    "https://www.camfunchat.me/",
+    "https://azayr24.net",
+    "https://payhip.com/Apexessentials",
+]
 
 # A pool of target keywords/topics your engine will dynamically generate pages for
 TARGET_KEYWORDS = [
@@ -10,6 +19,8 @@ TARGET_KEYWORDS = [
     "HD-broadcast-portal",
     "interactive-webcam-rooms",
     "global-model-channels",
+    "community-news-portal",
+    "digital-downloads-hub",
 ]
 
 
@@ -36,7 +47,7 @@ def home():
         <head><title>Automated SEO Engine</title></head>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;">
             <h1>🚀 Programmatic SEO Engine Active</h1>
-            <p>Engine is operating 24/7 capturing search traffic.</p>
+            <p>Engine is operating 24/7 capturing search traffic and distributing visitors to your active platforms.</p>
             <h3>Active Target Landing Pages:</h3>
             <ul>{links_html}</ul>
             <p><a href="/sitemap.xml" target="_blank">View XML Sitemap</a></p>
@@ -47,21 +58,29 @@ def home():
 
 @app.route("/target/<keyword>")
 def programmatic_page(keyword):
-    """Dynamically generate unique SEO landing pages for any keyword on the fly"""
+    """Dynamically generate unique SEO pages that automatically rotate and forward traffic to your sites"""
     clean_title = keyword.replace("-", " ").title()
+
+    # Randomly select one of your 4 target properties for each visitor
+    destination_url = random.choice(TARGET_DESTINATIONS)
+
     return f"""
     <html>
         <head>
-            <title>{clean_title} | Official Hub</title>
+            <title>{clean_title} | Official Access</title>
             <meta name="description" content="Discover top resources, streams, and details regarding {clean_title}. Access live portals instantly.">
+            <meta http-equiv="refresh" content="2;url={destination_url}">
+            <script>
+                setTimeout(function() {{
+                    window.location.href = "{destination_url}";
+                }}, 2000);
+            </script>
         </head>
-        <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px;">
+        <body style="font-family: Arial, sans-serif; text-align: center; padding-top: 50px; max-width: 600px; margin: auto;">
             <h1>{clean_title}</h1>
-            <p>Welcome to the dedicated portal for <strong>{clean_title}</strong>. Our automated system continuously indexes high-demand insights and direct access connections for our users.</p>
+            <p>Connecting you to the optimal network portal...</p>
             <div style="background: #f4f4f4; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                <h3>🔥 Direct Connection Portal</h3>
-                <p>Click below to proceed to the live broadcast network:</p>
-                <a href="https://camsex888.onrender.com" style="background: #ff4757; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Enter Live Stream →</a>
+                <p>If you are not redirected automatically, <a href="{destination_url}" style="color: #ff4757; font-weight: bold;">click here to proceed to the network →</a></p>
             </div>
             <br><a href="/">← Back to Home</a>
         </body>
