@@ -3,6 +3,7 @@ import random
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
+GOOGLE_VERIFICATION_TAG = '<meta name="google-site-verification" content="R23WtB1CD80fngqtqwDxasRU5kfiFLiS_nSsfQ0Ut3c" />'
 
 # Your 4 target sites for traffic distribution
 TARGET_DESTINATIONS = [
