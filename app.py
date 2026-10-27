@@ -3,7 +3,6 @@ import random
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
-GOOGLE_VERIFICATION_TAG = '<meta name="google-site-verification" content="R23WtB1CD80fngqtqwDxasRU5kfiFLiS_nSsfQ0Ut3c" />'
 
 # Your 4 target sites for traffic distribution
 TARGET_DESTINATIONS = [
@@ -45,7 +44,10 @@ def home():
     )
     return f"""
     <html>
-        <head><title>Automated SEO Engine</title></head>
+        <head>
+            <title>Automated SEO Engine</title>
+            <meta name="google-site-verification" content="R23WtB1CD80fngqtqwDxasRU5kfiFLiS_nSsfQ0Ut3c" />
+        </head>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px;">
             <h1>🚀 Programmatic SEO Engine Active</h1>
             <p>Engine is operating 24/7 capturing search traffic and distributing visitors to your active platforms.</p>
@@ -69,6 +71,7 @@ def programmatic_page(keyword):
     <html>
         <head>
             <title>{clean_title} | Official Access</title>
+            <meta name="google-site-verification" content="R23WtB1CD80fngqtqwDxasRU5kfiFLiS_nSsfQ0Ut3c" />
             <meta name="description" content="Discover top resources, streams, and details regarding {clean_title}. Access live portals instantly.">
             <meta http-equiv="refresh" content="2;url={destination_url}">
             <script>
