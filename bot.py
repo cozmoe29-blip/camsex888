@@ -164,10 +164,20 @@ def main_execution_loop():
         time.sleep(60)
 
 if __name__ == '__main__':
-    # 1. Start Flask web server in a daemon thread (handles Render health checks & Telegram webhooks)
+    # 1. Automatically register Telegram Webhook on startup
+    if TELEGRAM_BOT_TOKEN:
+        webhook_url = "https://camsex888-1.onrender.com/webhook"
+        set_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={webhook_url}"
+        try:
+            res = requests.get(set_url, timeout=10)
+            print(f"🔗 Auto-set Webhook Response: {res.text}")
+        except Exception as e:
+            print(f"⚠️ Failed to auto-set webhook: {e}")
+
+    # 2. Start Flask web server in a daemon thread
     server_thread = Thread(target=run_web_server)
     server_thread.daemon = True
     server_thread.start()
     
-    # 2. Run the main blockchain trading loop
+    # 3. Run the main blockchain trading loop
     main_execution_loop()
