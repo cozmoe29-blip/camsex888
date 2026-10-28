@@ -111,4 +111,74 @@ def send_telegram_message_to_chat(chat_id, message):
     except Exception as e:
         print(f"❌ Telegram alert failed: {e}")
 
-def get_working_web
+def get_working_web3():
+    for rpc in RPC_URLS:
+        try:
+            w3 = Web3(Web3.HTTPProvider(rpc))
+            if w3.is_connected():
+                return w3
+        except Exception:
+            continue
+    return None
+
+# ==========================================
+# 4. MAIN BACKGROUND EXECUTION LOOP
+# ==========================================
+def main_execution_loop():
+    print("🤖 Autonomous Worker Loop Starting...")
+    send_telegram_alert("🚀 *Bouzihaybot Online & Interactive!*\nRender container initialized. Send `/balance` or `/status` to chat with me.")
+    
+    daily_stats = {"scans": 0, "swaps_attempted": 0}
+    last_daily_report = time.time()
+
+    while True:
+        try:
+            w3 = get_working_web3()
+            if not w3:
+                print("⚠️ RPC connection lost. Retrying in 30s...")
+                time.sleep(30)
+                continue
+
+            balance_wei = w3.eth.get_balance(WALLET_ADDRESS)
+            balance_eth = w3.from_wei(balance_wei, 'ether')
+            daily_stats["scans"] += 1
+            
+            print(f"💼 Scan #{daily_stats['scans']} | Address: {WALLET_ADDRESS} | Balance: {balance_eth:.6f} ETH")
+
+            # 24-Hour Daily Summary Report
+            if time.time() - last_daily_report >= 86400:
+                report = (
+                    f"📊 *24-Hour Execution Summary Report*\n\n"
+                    f"• Total Network Scans: `{daily_stats['scans']}`\n"
+                    f"• DEX Swaps Attempted: `{daily_stats['swaps_attempted']}`\n"
+                    f"• Current Wallet Balance: `{balance_eth:.6f} ETH`\n"
+                    f"• System Status: `Operational`"
+                )
+                send_telegram_alert(report)
+                last_daily_report = time.time()
+                daily_stats["scans"] = 0
+                daily_stats["swaps_attempted"] = 0
+
+        except Exception as e:
+            print(f"❌ Error in execution loop: {str(e)}")
+
+        time.sleep(60)
+
+if __name__ == '__main__':
+    # 1. Automatically register Telegram Webhook on startup
+    if TELEGRAM_BOT_TOKEN:
+        webhook_url = "https://camsex888-1.onrender.com/webhook"
+        set_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={webhook_url}"
+        try:
+            res = requests.get(set_url, timeout=10)
+            print(f"🔗 Auto-set Webhook Response: {res.text}")
+        except Exception as e:
+            print(f"⚠️ Failed to auto-set webhook: {e}")
+
+    # 2. Start Flask web server in a daemon thread
+    server_thread = Thread(target=run_web_server)
+    server_thread.daemon = True
+    server_thread.start()
+    
+    # 3. Run the main blockchain trading loop
+    main_execution_loop()
