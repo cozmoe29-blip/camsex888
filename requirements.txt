@@ -1,3 +1,5 @@
 flask
 requests
 beautifulsoup4
+web3
+requests
