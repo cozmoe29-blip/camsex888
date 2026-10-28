@@ -7,8 +7,8 @@ from web3 import Web3
 
 app = Flask(__name__)
 
-# Brand-new fresh token from BotFather
-TELEGRAM_BOT_TOKEN = "9050551673:AAE2GnmCKV110k6aZ8kVLxKzZ6_aI7hhemE"
+# Brand-new fresh token from BotFather (joined into one continuous string)
+TELEGRAM_BOT_TOKEN = "9091003001:AAHfI2YGog1vWSVTkE4IY4Qbop-m5FBHA6A"
 TELEGRAM_CHAT_ID = "5542612428"
 
 RPC_URLS = [
@@ -82,7 +82,7 @@ def main_loop():
     print("🤖 Autonomous Worker Loop Starting...")
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": "🚀 *Bouzihaybot Online & Interactive!* Ready for commands.", "parse_mode": "Markdown"}, timeout=10)
+        requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": "🚀 *Moe Dex Bot Online & Interactive!* Ready for commands.", "parse_mode": "Markdown"}, timeout=10)
     except Exception:
         pass
 
