@@ -70,7 +70,7 @@ UNISWAP_ROUTER_ADDRESS = Web3.to_checksum_address("0x68b3465833fb72a70ecdf485e0e
 WETH_ADDRESS = Web3.to_checksum_address("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
 USDC_ADDRESS = Web3.to_checksum_address("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 
-# Hardcoded credentials to completely bypass environment variable truncation issues
+# Clean token string without spaces to clear 401 Unauthorized errors
 TELEGRAM_BOT_TOKEN = "9050551673:AAG8_jkS0SNHUp1YtkxLZQVcik6s8UfnKvA"
 TELEGRAM_CHAT_ID = "5542612428"
 
