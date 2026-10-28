@@ -2,17 +2,52 @@ import time
 import os
 import requests
 from threading import Thread
-from flask import Flask
+from flask import Flask, request as flask_request
 from web3 import Web3
 
 # ==========================================
-# 1. RENDER HEALTH CHECK SERVER
+# 1. RENDER HEALTH CHECK & TELEGRAM WEBHOOK SERVER
 # ==========================================
 app = Flask(__name__)
 
 @app.route('/')
 def health_check():
     return "Moe Autonomous Bot is live & operational!", 200
+
+@app.route('/webhook', methods=['POST'])
+def telegram_webhook():
+    """Receives incoming messages from Telegram so you can talk to your bot."""
+    try:
+        data = flask_request.get_json()
+        if 'message' in data:
+            chat_id = data['message']['chat']['id']
+            text = data['message'].get('text', '').strip().lower()
+            
+            if text == '/start' or text == '/help':
+                reply = (
+                    "🤖 *Moe Autonomous Bot Active*\n\n"
+                    "Available commands:\n"
+                    "• `/balance` - Check live wallet balance & gas\n"
+                    "• `/status` - Check bot operational status"
+                )
+                send_telegram_message_to_chat(chat_id, reply)
+            elif text == '/balance' or text == 'balance':
+                w3 = get_working_web3()
+                if w3:
+                    bal_wei = w3.eth.get_balance(WALLET_ADDRESS)
+                    bal_eth = w3.from_wei(bal_wei, 'ether')
+                    gas = w3.from_wei(w3.eth.gas_price, 'gwei')
+                    reply = f"💼 *Wallet Balance:* `{bal_eth:.6f} ETH`\n⛽ *Gas Price:* `{gas:.2f} Gwei`"
+                else:
+                    reply = "⚠️ Could not connect to RPC network right now."
+                send_telegram_message_to_chat(chat_id, reply)
+            elif text == '/status' or text == 'status':
+                send_telegram_message_to_chat(chat_id, "🟢 *Status:* Bot is running 24/7 on Render cloud and scanning successfully.")
+                
+        return "OK", 200
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return "OK", 200
 
 def run_web_server():
     port = int(os.environ.get("PORT", 10000))
@@ -62,12 +97,15 @@ ROUTER_ABI = [
 # 3. UTILITY FUNCTIONS
 # ==========================================
 def send_telegram_alert(message):
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+    send_telegram_message_to_chat(TELEGRAM_CHAT_ID, message)
+
+def send_telegram_message_to_chat(chat_id, message):
+    if not TELEGRAM_BOT_TOKEN or not chat_id:
         print(f"[LOCAL REPORT] {message}")
         return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "Markdown"}
+        payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
         requests.post(url, json=payload, timeout=10)
     except Exception as e:
         print(f"❌ Telegram alert failed: {e}")
@@ -83,53 +121,11 @@ def get_working_web3():
     return None
 
 # ==========================================
-# 4. DEX SWAP ENGINE LOGIC
-# ==========================================
-def execute_uniswap_v3_swap(w3, amount_in_eth):
-    """Encodes and broadcasts a Uniswap V3 ETH -> USDC exactInput swap."""
-    try:
-        router_contract = w3.eth.contract(address=UNISWAP_ROUTER_ADDRESS, abi=ROUTER_ABI)
-        amount_in_wei = w3.to_wei(amount_in_eth, 'ether')
-        
-        # Path encoding: WETH (20 bytes) + Fee 0.3% (3 bytes) + USDC (20 bytes)
-        path = bytes.fromhex(WETH_ADDRESS[2:]) + (3000).to_bytes(3, 'big') + bytes.fromhex(USDC_ADDRESS[2:])
-        
-        params = {
-            'path': path,
-            'recipient': WALLET_ADDRESS,
-            'amountIn': amount_in_wei,
-            'amountOutMinimum': 0  # Adjust for slippage protection in production
-        }
-        
-        nonce = w3.eth.get_transaction_count(WALLET_ADDRESS)
-        gas_price = w3.eth.gas_price
-        
-        tx = router_contract.functions.exactInput(params).build_transaction({
-            'from': WALLET_ADDRESS,
-            'value': amount_in_wei,
-            'gas': 250000,
-            'maxFeePerGas': int(gas_price * 1.2),
-            'maxPriorityFeePerGas': w3.to_wei(1.5, 'gwei'),
-            'nonce': nonce,
-            'chainId': 1
-        })
-        
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key=PRIVATE_KEY)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        hash_hex = w3.to_hex(tx_hash)
-        
-        send_telegram_alert(f"🚀 *DEX Swap Executed!*\nHash: [{hash_hex}](https://etherscan.io/tx/{hash_hex})")
-        return hash_hex
-    except Exception as e:
-        send_telegram_alert(f"❌ *DEX Swap Failed:* {str(e)}")
-        return None
-
-# ==========================================
-# 5. MAIN BACKGROUND EXECUTION LOOP
+# 4. MAIN BACKGROUND EXECUTION LOOP
 # ==========================================
 def main_execution_loop():
     print("🤖 Autonomous Worker Loop Starting...")
-    send_telegram_alert("🚀 *Bouzihaybot Online!*\nRender container initialized. Web server and DEX engine active.")
+    send_telegram_alert("🚀 *Bouzihaybot Online & Interactive!*\nRender container initialized. Send `/balance` or `/status` to chat with me.")
     
     daily_stats = {"scans": 0, "swaps_attempted": 0}
     last_daily_report = time.time()
@@ -168,7 +164,7 @@ def main_execution_loop():
         time.sleep(60)
 
 if __name__ == '__main__':
-    # 1. Start Flask web server in a daemon thread (satisfies Render port checks)
+    # 1. Start Flask web server in a daemon thread (handles Render health checks & Telegram webhooks)
     server_thread = Thread(target=run_web_server)
     server_thread.daemon = True
     server_thread.start()
