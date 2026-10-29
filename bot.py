@@ -11,11 +11,12 @@ app = Flask(__name__)
 TELEGRAM_BOT_TOKEN = "9091003001:AAHfI2YGog1vWSVTkE4IY4Qbop-m5FBHA6A"
 TELEGRAM_CHAT_ID = "5542612428"
 
-# Public reliable RPC endpoints
+# High-performance redundant RPC list
 RPC_URLS = [
-    "https://eth.llamarpc.com",
+    "https://cloudflare-eth.com",
     "https://rpc.ankr.com/eth",
-    "https://cloudflare-eth.com"
+    "https://eth.llamarpc.com",
+    "https://1rpc.io/eth"
 ]
 
 WALLET_ADDRESS = Web3.to_checksum_address("0x14925C541c95D827dF2773bA466F8f59CC11B256")
@@ -158,7 +159,7 @@ def main_loop():
             connected = False
             for rpc in RPC_URLS:
                 try:
-                    w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 5}))
+                    w3 = Web3(Web3.HTTPProvider(rpc, request_kwargs={'timeout': 8}))
                     if w3.is_connected():
                         bal_wei = w3.eth.get_balance(WALLET_ADDRESS)
                         gas_wei = w3.eth.gas_price
@@ -171,7 +172,11 @@ def main_loop():
                     continue
 
             BOT_STATE["scans"] += 1
-            log_msg = f"Scan #{BOT_STATE['scans']} | Balance: {BOT_STATE['last_balance']:.6f} ETH | Gas: {BOT_STATE['gas_price']:.1f} Gwei"
+            if connected:
+                log_msg = f"Scan #{BOT_STATE['scans']} | Balance: {BOT_STATE['last_balance']:.6f} ETH | Gas: {BOT_STATE['gas_price']:.1f} Gwei"
+            else:
+                log_msg = f"Scan #{BOT_STATE['scans']} | RPC connecting..."
+                
             print(log_msg)
             
             if len(BOT_STATE["log_history"]) > 20:
